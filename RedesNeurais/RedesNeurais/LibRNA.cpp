@@ -35,6 +35,8 @@ void LibRNA::carregaDados(
 	// Uma única entrada
 	struct neuralInputVector inputItem;
 
+	cout << "Loading data ";
+
 	// Ponteiro para o arquivo CSV com os dados
 	FILE *data;
 
@@ -42,7 +44,7 @@ void LibRNA::carregaDados(
 	data = fopen(nomeArquivoDados, "r");
 
 	// Contador de registros lidos
-	unsigned char cont = 0;
+	unsigned int cont = 0;
 
 	// Variável que lê o ";"
 	char u;
@@ -56,6 +58,7 @@ void LibRNA::carregaDados(
 	{ // São numClasses*numElemClasse registros, numElemClasse de cada classe	
 		while (cont < numClasses*numElemClasse)
 		{
+			cout << "=";
 			inputItem.entradas = (double *)malloc(numEntradas*sizeof(double));
 			inputItem.nEntradas = numEntradas;
 			inputItem.alvo = (int *)malloc(numClasses*sizeof(int));
@@ -80,10 +83,11 @@ void LibRNA::carregaDados(
 			// Insere o registro no vetor de registros	
 			vetorDados.insert(vetorDados.end(), inputItem);
 
-			cont++;						
+			cont++;					
 		}
 	}
 	fclose(data);
+	cout << "> " << cont << " samples." << endl;
 }
 
 // Separa dados em Input e Output
@@ -130,7 +134,7 @@ void LibRNA::criaConjuntos(
 
 		int conta = 0;
 
-		// Embaralhas índices de 0 a 49
+		// Embaralhas índices de 0 a numElemPorClasse-1
 		srand(time(NULL));
 		while (conta < numElemPorClasse){
 			selectedInd = rand() % numElemPorClasse;
@@ -169,7 +173,6 @@ void LibRNA::criaConjuntos(
 	}
 }
 
-
 void LibRNA::normalizaEntrada(
 	Mat &inputOriginal,
 	Mat &inputNormalizada,
@@ -183,7 +186,6 @@ void LibRNA::normalizaEntrada(
 			{
 				Maior = inputOriginal.at<float>(j, i);
 			}
-
 		}
 		coef.push_back(Maior);
 	}
@@ -209,9 +211,9 @@ void LibRNA::calDesempenho(
 	// Coloca a maior saída para 1 e as restantes para zero
 	int indVenc;
 	for (int i = 0; i < vetorOutputPred.rows; i++){
-		int Vencedor = 0;
+		int Vencedor = -1000;
 		for (int j = 0; j < vetorOutputPred.cols; j++){
-			if (vetorOutputPred.at<float>(i, j) > Vencedor){
+			if (vetorOutputPred.at<float>(i, j) >= Vencedor){
 				Vencedor = vetorOutputPred.at<float>(i, j);
 				indVenc = j;
 			}
@@ -250,34 +252,36 @@ void LibRNA::gravaConjuntos(
 	Mat &vetorOutputTeste, 
 	string caminho){
 
-	ofstream out;
-	out.open(caminho+"\\vetorTreino.csv"); // o arquivo que será criado;
+	ofstream out_treino, out_teste;
+	out_treino.open(caminho+"\\vetorTreino.csv"); // o arquivo que será criado;
 
 	for (size_t i = 0; i < vetorInputTreino.rows; i++)
 	{
 		for (size_t j = 0; j < vetorInputTreino.cols; j++){
-			out << vetorInputTreino.at<float>(i, j) << ";";
+			out_treino << vetorInputTreino.at<float>(i, j) << ";";
 		}
 		for (size_t j = 0; j < vetorOutputTreino.cols; j++){
-			out << vetorOutputTreino.at<float>(i, j) << ";";
+			out_treino << vetorOutputTreino.at<float>(i, j);
+			if (j != vetorOutputTreino.cols-1) out_treino << ";";
 		}
-		out << endl;
+		out_treino << endl;
 	}
-	out.close();
+	out_treino.close();
 
-	out.open(caminho + "\\vetorTeste.csv");
+	out_teste.open(caminho + "\\vetorTeste.csv");
 
 	for (size_t i = 0; i < vetorInputTeste.rows; i++)
 	{
 		for (size_t j = 0; j < vetorInputTeste.cols; j++){
-			out << vetorInputTeste.at<float>(i, j) << ";";
+			out_teste << vetorInputTeste.at<float>(i, j) << ";";
 		}
 		for (size_t j = 0; j < vetorOutputTeste.cols; j++){
-			out << vetorOutputTeste.at<float>(i, j) << ";";
+			out_teste << vetorOutputTeste.at<float>(i, j);
+			if (j != vetorOutputTeste.cols - 1) out_teste << ";";
 		}
-		out << endl;
+		out_teste << endl;
 	}
-	out.close();
+	out_teste.close();
 }
 
 
@@ -290,40 +294,41 @@ void LibRNA::carregaConjuntos(
 	string caminho){
 
 	// entrada.
-	ifstream in; // in é uma variável.
+	ifstream in_treino, in_teste; // in é uma variável.
 	char u;
 	
-	in.open(caminho + "\\vetorTreino.csv"); // o arquivo que será criado;			
+	in_treino.open(caminho + "\\vetorTreino.csv"); // abre o arquivo;			
 	for (int i = 0; i < vetorInputTreino.rows; i++)
 	{
 		for (int j = 0; j < vetorInputTreino.cols; j++){
-			in >> vetorInputTreino.at<float>(i, j);
-			in >> u;
+			in_treino >> vetorInputTreino.at<float>(i, j);
+			in_treino >> u;
 		}
 		for (int j = 0; j < vetorOutputTreino.cols; j++){
-			in >> vetorOutputTreino.at<float>(i, j);
-			in >> u;
+			in_treino >> vetorOutputTreino.at<float>(i, j);
+			if (j != vetorOutputTreino.cols - 1) in_treino >> u;			
 		}
-		in >> u;
+		//in_treino >> u;
 	}
-	in.close();
-
-
-	in.open(caminho + "\\vetorTeste.csv"); // o arquivo que será criado;
+	in_treino.close();
+	
+	in_teste.open(caminho + "\\vetorTeste.csv"); // abre o arquivo;
 	for (int i = 0; i < vetorInputTeste.rows; i++)
 	{
 		for (int j = 0; j < vetorInputTeste.cols; j++){
-			in >> vetorInputTeste.at<float>(i, j);
-			in >> u;
+			in_teste >> vetorInputTeste.at<float>(i, j);
+			in_teste >> u;
+			cout << vetorInputTeste.at<float>(i, j) << " ";
 		}
 		for (int j = 0; j < vetorOutputTeste.cols; j++){
-			in >> vetorOutputTeste.at<float>(i, j);
-			in >> u;
+			in_teste >> vetorOutputTeste.at<float>(i, j);
+			if (j != vetorOutputTeste.cols - 1) in_teste >> u;
+			//in_teste >> u;
+			cout << vetorOutputTeste.at<float>(i, j) << u;
 		}
-		in >> u;
+		//in_teste >> u;
+		cout << endl;
 	}
-	in.close();
-
-
+	in_teste.close();
 }
 

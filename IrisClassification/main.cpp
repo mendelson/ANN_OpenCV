@@ -21,45 +21,47 @@ int main(){
 	//                     CONFIGURAÇÃO                        //
 	/////////////////////////////////////////////////////////////
 
-	// Exemplo: Entrada=> [x1; x2; x3; x4] // Saída=> [y1; y2; y3], xn real, yn binário. 
-	// yn deve zero em todas as posições exceto na posição que identifica a classe em questão.
-	// Os valores podem ser acrescentados como valores de cabeçalho no arquivo CSV.
+	// Exemplo: 
+	// Entrada=> [x1; x2; x3; x4] double
+	// Saída=> [y1; y2; y3]; int
+	// yn deve -1 em todas as posições exceto na posição que identifica a classe em questão, que deve ser 1.
+	// Os valores podem ser acrescentados como valores de cabeçalho no arquivo de dados.
 	// Cada classe deve ter o mesmo número de elementos no arquivo de dados. E todos os elementos de 
 	// cada classe devem estar contíguos. O número de elementos por classe deve ser par.
-	// Considere o exemplo abaixo, onde temos 2 classes com 3 elementos por classe
-	// 0.10; 0.30; 0.50; 0.40; 1; 0; 0
-	// 0.10; 0.25; 0.51; 0.39; 1; 0; 0
-	// 0.15; 0.30; 0.52; 0.40; 1; 0; 0
-	// 0.51; 0.62; 0.55; 0.46; 0; 1; 0
-	// 0.55; 0.52; 0.64; 0.47; 0; 1; 0
-	// 0.57; 0.49; 0.60; 0.50; 0; 1; 0
-	// 0.90; 0.89; 0.78; 0.90; 0; 0; 1
-	// 0.91; 0.88; 0.79; 0.89; 0; 0; 1
-	// 0.95; 0.79; 0.83; 0.94; 0; 0; 1
-
+	// Considere o exemplo abaixo, onde temos 3 classes com 3 elementos por classe
+	// 0.10; 0.30; 0.50; 0.40; 1;-1;-1
+	// 0.10; 0.25; 0.51; 0.39; 1;-1;-1
+	// 0.15; 0.30; 0.52; 0.40; 1;-1;-1
+	// 0.51; 0.62; 0.55; 0.46;-1; 1;-1
+	// 0.55; 0.52; 0.64; 0.47;-1; 1;-1
+	// 0.57; 0.49; 0.60; 0.50;-1; 1;-1
+	// 0.90; 0.89; 0.78; 0.90;-1;-1; 1
+	// 0.91; 0.88; 0.79; 0.89;-1;-1; 1
+	// 0.95; 0.79; 0.83; 0.94;-1;-1; 1
+	
 	// Nome do arquivo de dados
-	char nomeArquivoDados[] = "dados\\iris.csv";
+	char nomeArquivoDados[] = "dados\\opencvInput_tanh.txt";
 
 	// Número de features no vetor de entradas. Precisa ser fornecido pelo usuário.
-	int numEntradas = 4;
+	int numEntradas = 6;
 
 	// Número de saídas binárias. Precisa ser conhecido pelo usuário.
-	int numClasses = 3;
+	int numClasses = 10;
 
 	// Número de elementos por classe. Precisa ser conhecido pelo usuário.
-	int numElemClasse = 50;
+	int numElemClasse = 60;
 
 	// Número mínimo e máximo de neurônios na camada escondida. Serão realizados treinamentos com
 	// minNeuronio até maxNeuronio com intercalos de passoNeuronio
-	int minNeuronio = 5;
-	int maxNeuronio = 65;
+	int minNeuronio = 10;
+	int maxNeuronio = 60;
 
 	// Variação do número de neurônios entre passos.
 	int passoNeuronio = 10;
 
 	// Quantidade de treinamentos para cada quantidade de neurônios da camada escondidade
 	// Para cada quantidade de neurônios serão realizados quantTreinamento treinamentos
-	int quantTreinamento = 5;
+	int quantTreinamento = 2;
 
 	////////////////////////////////////////////////////////////////
 	// Carrega os dados para treinamento e teste
@@ -106,7 +108,7 @@ int main(){
 
 	// Saída teste
 	Mat vetorOutputTeste = Mat(dataVector.size() / 2, numClasses, CV_32FC1);
-
+	cout << endl;
 	cout << "Criando conjuntos de treinamento e teste...";
 	// Separa dados em Treinamento e Teste
 	lib.criaConjuntos(
@@ -151,15 +153,15 @@ int main(){
 	Mat layersConfig = Mat(3, 1, CV_32S);
 	
 	// Realiza treinamentos variado-se a quantidade de neurônios na camada escondida
-	for (int nNeuronios = minNeuronio; nNeuronios < maxNeuronio; nNeuronios += 10){
+	for (int nNeuronios = minNeuronio; nNeuronios <= maxNeuronio; nNeuronios += passoNeuronio){
 		
-		//Camada de entrada = quantidade de entradas
+		//Camada de entrada <= quantidade de entradas
 		layersConfig.at<int>(0, 0) = vetorInputTreino.cols;
 
-		// Camada escondida => Varia entre treinamentos
+		// Camada escondida <= Varia entre treinamentos
 		layersConfig.at<int>(1, 0) = nNeuronios;
 		
-		// Camada escondida = quantidade de saidas
+		// Camada de saída <= Quantidade de saidas
 		layersConfig.at<int>(2, 0) = vetorOutputTreino.cols;
 
 		cout << "======================================" << endl;

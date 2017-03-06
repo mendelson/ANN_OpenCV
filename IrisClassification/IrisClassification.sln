@@ -11,7 +11,7 @@ Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://azaghetto.visualstudio.com/defaultcollection
+		SccTeamFoundationServer = https://azaghetto.visualstudio.com/
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = IrisClassification.vcxproj
 		SccLocalPath1 = .
